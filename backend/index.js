@@ -1,18 +1,17 @@
 const express = require("express");
 const app = express();
-const path = require("path")
 const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 const router = express.Router({
   caseSensitive: true,
 })
-app.set('view engine', 'ejs');
-app.set('views', path.join(__dirname,'views'))
+const cors = require("cors");
 
 app.use(express.json());
 app.use(router);
+app.use(cors());
 
-const logInfo = new Schema({
+const RegInfo = new Schema({
   email: {
     type: String,
     required: true,
@@ -21,28 +20,37 @@ const logInfo = new Schema({
   password: {
     type: String,
     required: true,
+  },
+  username : {
+    type: String,
+    required: true,
+    unique: true,
   }
 })
 
-const logIn = mongoose.model('login', logInfo);
+const RegUser = mongoose.model('registration', RegInfo);
 
 router.get('/', (req,res)=>{
-  res.render("home")
+  res.status(200).send("hello")
 })
 
 
+router.post('/registration', (req,res)=>{
+  const {email, password, username} = req.body;
 
-router.post('/login', (req,res)=>{
-  const {email, password} = req.body;
-
-  let logUser = new logIn({
-    email, password
+  if(!email || !password || !username){
+    return res.status(400).send("email,password and username required!")
+  }
+  
+  // data sent to the database 
+  let user = new RegUser ({
+    email, password , username
   })
-
-  logUser.save();
-  res.send("save data sucessfully");
-
+  user.save();
+  res.status(200).send("data sent")
 })
+
+
 
 
 mongoose.connect('mongodb+srv://nodewithdb:ROvUpj2MnGEVNjOV@cluster0.68lfj.mongodb.net/userData?retryWrites=true&w=majority&appName=Cluster0')
